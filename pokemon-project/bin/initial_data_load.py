@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import sys
-import json
 import requests
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,18 +18,18 @@ def get_load_data():
     for pokemon in data:
         pokemon_data = Pokemon(
             rank=pokemon["#"],
-            Name=pokemon["Name"],
-            Type_1=pokemon["Type 1"],
-            Type_2=pokemon["Type 2"],
-            Total=pokemon["Total"],
-            HP=pokemon["HP"],
-            Attack=pokemon["Attack"],
-            Defense=pokemon["Defense"],
-            Sp_Atk=pokemon["Sp. Atk"],
-            Sp_Def=pokemon["Sp. Def"],
-            Speed=pokemon["Speed"],
-            Generation=pokemon["Generation"],
-            Legendary=pokemon["Legendary"],
+            name=pokemon["Name"],
+            type_1=pokemon["Type 1"],
+            type_2=pokemon["Type 2"],
+            total=pokemon["Total"],
+            hp=pokemon["HP"],
+            attack=pokemon["Attack"],
+            defense=pokemon["Defense"],
+            sp_atk=pokemon["Sp. Atk"],
+            sp_def=pokemon["Sp. Def"],
+            speed=pokemon["Speed"],
+            generation=pokemon["Generation"],
+            legendary=pokemon["Legendary"],
         )
         db.session.add(pokemon_data)
     db.session.commit()

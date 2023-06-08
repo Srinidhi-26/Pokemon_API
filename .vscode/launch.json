@@ -11,7 +11,7 @@
             "type": "python",
             "request": "launch",
             "module": "flask",
-            "cwd":"/home/srinidhi/Project/pokeman-project",
+            "cwd":"/home/srinidhi/Project/pokemon-project",
 
             "env": {
                     "FLASK_APP": "app",
