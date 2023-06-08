@@ -181,60 +181,54 @@ def create_pokemon():
 @auth_required
 def upsert():
     """
-    This API updates If the pokemon is already present.
-    if pokemon is not present it will insert.
-    params : {
-        name: Name of the database
-        rank (int): rank of the pokemon
-        type_1 (str): type_1 of the pokemon
-        type_2(str): type_2 of the pokemon
-        }
+    This API updates if the Pokémon is already present.
+    If the Pokémon is not present, it will be inserted.
+    Params: {
+        name: Name of the Pokémon
+        rank (int): Rank of the Pokémon
+        type_1 (str): Type 1 of the Pokémon
+        type_2 (str): Type 2 of the Pokémon
+        total(int): total of the pokemon
+        hp(int): hp for the pokemon
+        attack (int): attack for the pokemon
+        defense(int): defense for the pokemon
+        sp_Atk(int): sp_atk for the pokemon
+        sp_Def(int): sp_def for the pokemon
+        speed(int): speed of the pokemon
+        generation(int): generation of the pokemon
+        legendary(int): legendary of the pokemon
+    }
     """
     pokemon_data = request.json.get("pokemon_data")
     values = []
-    for pokemon_data in pokemon_data:
-        pokemon_values = {
-            "name": pokemon_data.get("name"),
-            "rank": pokemon_data.get("rank"),
-            "type_1": pokemon_data.get("type_1"),
-            "type_2": pokemon_data.get("type_2"),
-            "total": pokemon_data.get("total"),
-            "hp": pokemon_data.get("hp"),
-            "attack": pokemon_data.get("attack"),
-            "defense": pokemon_data.get("defense"),
-            "sp_atk": pokemon_data.get("sp_atk"),
-            "sp_def": pokemon_data.get("sp_def"),
-            "speed": pokemon_data.get("speed"),
-            "generation": pokemon_data.get("generation"),
-            "legendary": pokemon_data.get("legendary"),
-        }
+    for pokemon_info in pokemon_data:
+        existing_pokemon = Pokemon.query.filter_by(name=pokemon_info.get("name")).first()
+        if existing_pokemon:
+            for column in Pokemon.__table__.columns:
+                column_name = column.name
+                if column_name != "id" and column_name != "name" and column_name != "type_1":
+                    column_value = pokemon_info.get(column_name, getattr(existing_pokemon, column_name))
+                else:
+                    column_value = pokemon_info.get(column_name, getattr(existing_pokemon, column_name))
+                
+                pokemon_info[column_name] = column_value
 
-        values.append(pokemon_values)
+        values.append(pokemon_info)
 
     insert_stmt = insert(Pokemon).values(values)
 
     do_update_stmt = insert_stmt.on_conflict_do_update(
         index_elements=["name"],
-        set_={
-            "rank": insert_stmt.excluded.rank,
-            "name": insert_stmt.excluded.name,
-            "type_1": insert_stmt.excluded.type_1,
-            "type_2": insert_stmt.excluded.type_2,
-            "total": insert_stmt.excluded.total,
-            "hp": insert_stmt.excluded.hp,
-            "attack": insert_stmt.excluded.attack,
-            "defense": insert_stmt.excluded.defense,
-            "sp_atk": insert_stmt.excluded.sp_atk,
-            "sp_def": insert_stmt.excluded.sp_def,
-            "speed": insert_stmt.excluded.speed,
-            "generation": insert_stmt.excluded.generation,
-            "legendary": insert_stmt.excluded.legendary,
-        },
+        set_=insert_stmt.excluded
     )
 
     db.session.execute(do_update_stmt)
     db.session.commit()
-    return {"success": True, "message": "Pokemon added/updated successfully"}, 200
+
+    return {
+        "success": True, 
+        "message": "Pokémon added/updated successfully"
+        }, 200
 
 
 @pokeman_api.route("/", methods=["DELETE"])
