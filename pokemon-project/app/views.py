@@ -104,7 +104,7 @@ def get_pokemon(pokemon_id=None):
         )
 
     if pokemon_data.has_next:
-        next_url = url_for("pokeman_api.get_pokemon", page=pokemon_data.next_num)
+        next_url = url_for("pokeman_api.get_pokemon", page=pokemon_data.next_num, _external= True)
     else:
         next_url = None
 

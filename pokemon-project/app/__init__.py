@@ -3,16 +3,15 @@ from flask import Flask
 from flask_marshmallow import Marshmallow
 
 # Custom Imports
-from app.config import Config, ProductionConfig
+from app.config import Config
 
 app = Flask(__name__)
 ma = Marshmallow(app)
+config = Config(app)
+app.config.update(config.parse_config())
 
 
 def create_app():
-    app.config.from_object(Config)
-    app.config.from_object(ProductionConfig)
-
     register_blueprints()
     return app
 
