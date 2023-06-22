@@ -15,7 +15,7 @@ migrate = Migrate(app, db, compare_type=True)
 
 @dataclass
 class Pokemon(db.Model):
-    id: int = db.Column(db.Integer, primary_key=True)
+    id: int = db.Column(db.Integer, primary_key=True, autoincrement=True)
     rank: int = db.Column(db.Integer, nullable=False)
     name: str = db.Column(db.Text, unique=True, nullable=False)
     type_1: str = db.Column(db.Text, nullable=False)
@@ -51,4 +51,4 @@ class PokemonSchema(ma.Schema):
 
 
 pokemon_schema = PokemonSchema()
-pokemonss_schema = PokemonSchema(many=True)
+pokemons_schema = PokemonSchema(many=True)

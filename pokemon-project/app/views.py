@@ -1,7 +1,6 @@
 # Installed Imports
 from flask import Blueprint, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.dialects.postgresql import insert
 import ast
 
 # Custom Imports
@@ -104,7 +103,9 @@ def get_pokemon(pokemon_id=None):
         )
 
     if pokemon_data.has_next:
-        next_url = url_for("pokeman_api.get_pokemon", page=pokemon_data.next_num, _external= True)
+        next_url = url_for(
+            "pokeman_api.get_pokemon", page=pokemon_data.next_num, _external=True
+        )
     else:
         next_url = None
 
@@ -200,35 +201,39 @@ def upsert():
     }
     """
     pokemon_data = request.json.get("pokemon_data")
-    values = []
+
+    insert_values = []
+    update_values = []
+
     for pokemon_info in pokemon_data:
-        existing_pokemon = Pokemon.query.filter_by(name=pokemon_info.get("name")).first()
+        pokemon_id = pokemon_info.get("id")
+        existing_pokemon = Pokemon.query.get(pokemon_id) if pokemon_id else None
+
         if existing_pokemon:
             for column in Pokemon.__table__.columns:
                 column_name = column.name
-                if column_name != "id" and column_name != "name" and column_name != "type_1":
-                    column_value = pokemon_info.get(column_name, getattr(existing_pokemon, column_name))
-                else:
-                    column_value = pokemon_info.get(column_name, getattr(existing_pokemon, column_name))
-                
-                pokemon_info[column_name] = column_value
+                if column_name != "name":
+                    column_value = pokemon_info.get(
+                        column_name, getattr(existing_pokemon, column_name)
+                    )
+                    setattr(existing_pokemon, column_name, column_value)
+            update_values.append(existing_pokemon)
 
-        values.append(pokemon_info)
+        else:
+            pokemon_info.pop("id", None)
+            new_pokemon = Pokemon()
+            for column_name, column_value in pokemon_info.items():
+                setattr(new_pokemon, column_name, column_value)
+            insert_values.append(new_pokemon)
 
-    insert_stmt = insert(Pokemon).values(values)
+    if insert_values:
+        db.session.add_all(insert_values)
+    if update_values:
+        db.session.bulk_save_objects(update_values)
 
-    do_update_stmt = insert_stmt.on_conflict_do_update(
-        index_elements=["name"],
-        set_=insert_stmt.excluded
-    )
-
-    db.session.execute(do_update_stmt)
     db.session.commit()
 
-    return {
-        "success": True, 
-        "message": "Pokémon added/updated successfully"
-        }, 200
+    return {"success": True, "message": "Pokemon added/updated successfully"}, 200
 
 
 @pokeman_api.route("/", methods=["DELETE"])

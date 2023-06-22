@@ -7,11 +7,11 @@ from app.config import Config
 
 app = Flask(__name__)
 ma = Marshmallow(app)
-config = Config(app)
-app.config.update(config.parse_config())
 
 
 def create_app():
+    config = Config(app)
+    app.config.update(config.parse_config())
     register_blueprints()
     return app
 
